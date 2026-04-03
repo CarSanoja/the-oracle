@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "memory": {
+      "command": "node",
+      "args": ["/Users/cs/.claude/mcp-memory/index.mjs"],
+      "env": {
+        "MEMORY_DB_PATH": "/Users/cs/Documents/Quanta/the-oracle/.claude/memory.db"
+      }
+    }
+  }
+}
