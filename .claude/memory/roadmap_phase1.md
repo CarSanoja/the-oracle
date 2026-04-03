@@ -1,41 +1,61 @@
 ---
 name: Roadmap Phase 1
-description: Phase 1 tasks — core MCP server, CLI commands, registry, knowledge store, first adapters
+description: Phase 1 implementation plan — 4 sprints, 13 features, exact file paths and code patterns
 type: project
 ---
 
-## Phase 1 — Proof of Concept
+## Phase 1 — Proof of Concept (4 Sprints)
 
-**Goal**: Two projects can query each other via MCP over Unix domain sockets.
+Full plan at `docs/internal/IMPLEMENTATION_PLAN.md`.
+Technical reference at `docs/internal/TECHNICAL_REFERENCE.md`.
 
-### Core (`@the-oracle/core`)
+### Sprint 1: Security Foundation
 
-| Task | Status | Feature |
-|------|--------|---------|
-| CLI entry point (`init`, `serve`, `ask`, `peer add`, `status`, `stop`) | pending | F-001 |
-| MCP server over Unix domain sockets | pending | F-002 |
-| MCP tools: `oracle_ask`, `oracle_search`, `oracle_list_peers`, `oracle_ask_peer`, `oracle_status` | pending | F-003 |
-| Registry (`~/.the-oracle/registry.json`, 0600 perms) | pending | F-004 |
-| Knowledge store (SQLite, per-project cache with TTL) | pending | F-005 |
-| Auth token generation + validation middleware | pending | F-006 |
-| Secrets deny-list enforcement | pending | F-007 |
-| Response sanitization middleware | pending | F-008 |
-| `.oracleignore` file support | pending | F-009 |
+| Step | Feature | Files | Status |
+|------|---------|-------|--------|
+| 1.1 | F-006 Auth Token | `core/src/auth/{token,middleware}.ts` | pending |
+| 1.2 | F-007 Secrets Deny-List | `core/src/security/{secrets-denylist,response-sanitizer}.ts` | pending |
+| 1.3 | F-004 Registry | `core/src/registry/{registry,types}.ts` | pending |
+| 1.4 | F-005 Knowledge Store | `core/src/store/{knowledge-store,schema}.ts` | pending |
 
-### Adapters
+**Gate**: All unit tests pass, no external deps beyond better-sqlite3.
 
-| Task | Status | Feature |
-|------|--------|---------|
-| Claude adapter — detect + query via `claude -p` with `--allowedTools` | pending | F-010 |
-| Codex adapter — detect + query via `codex exec` | pending | F-011 |
+### Sprint 2: MCP Server + Router
 
-### Integration
+| Step | Feature | Files | Status |
+|------|---------|-------|--------|
+| 2.1 | F-002a Unix Socket Transport | `core/src/transport/{unix-socket-server,unix-socket-client}.ts` | pending |
+| 2.2 | F-002b Oracle Router | `core/src/router/{router,adapter-manager}.ts` | pending |
+| 2.3 | F-003 MCP Tools | `core/src/tools/{oracle-ask,oracle-search,oracle-ask-peer,oracle-list-peers,oracle-status,register-tools}.ts` | pending |
+| 2.4 | F-002c Daemon Server | `core/src/server/{daemon,health}.ts` | pending |
 
-| Task | Status | Feature |
-|------|--------|---------|
-| End-to-end test: Claude project asks Codex project a question | pending | F-012 |
-| npm workspace build + test pipeline working | pending | F-013 |
+**Gate**: Daemon starts, socket exists, MCP tools callable via test client.
 
-**Why:** Phase 1 proves the core concept with real security. Everything after builds on this foundation.
+### Sprint 3: CLI + Adapters
 
-**How to apply:** Implement in order: F-006 (auth) → F-007 (secrets) → F-004 (registry) → F-002 (MCP server) → F-005 (knowledge store) → F-003 (tools) → F-001 (CLI) → F-010/F-011 (adapters) → F-012 (integration test).
+| Step | Feature | Files | Status |
+|------|---------|-------|--------|
+| 3.1 | F-001 CLI Entry Point | `core/src/cli/{index,init,serve,ask,peer,status,stop}.ts` | pending |
+| 3.2 | F-010 Claude Adapter | `adapter-claude/src/{claude-adapter,detect}.ts` | pending |
+| 3.3 | F-011 Codex Adapter | `adapter-codex/src/{codex-adapter,detect}.ts` | pending |
+
+**Gate**: `the-oracle init && the-oracle serve` works, `the-oracle ask` returns answer.
+
+### Sprint 4: Integration + Polish
+
+| Step | Feature | Files | Status |
+|------|---------|-------|--------|
+| 4.1 | F-013 Build Pipeline | tsconfig verification, turbo build | pending |
+| 4.2 | F-009 .oracleignore | `core/src/security/oracle-ignore.ts` | pending |
+| 4.3 | F-008 Response Sanitization Wiring | Wire into router + peer tools | pending |
+| 4.4 | F-012 E2E Tests | `core/src/__tests__/e2e-*.test.ts` | pending |
+
+**Gate**: All E2E tests pass, `npx turbo build && npx turbo test` green.
+
+### Implementation Order
+
+Start Sprint 1 Step 1.1, finish it, then 1.2, etc. Sequential within sprints. No jumping ahead.
+
+**Why:** Security foundation (Sprint 1) must exist before the server (Sprint 2) that uses it. The server must exist before the CLI (Sprint 3) that controls it. Integration tests (Sprint 4) need everything working.
+
+**How to apply:** Open session in the-oracle project directory. Say "implement Step 1.1 — Auth Token System". The plan in `docs/internal/IMPLEMENTATION_PLAN.md` has exact file paths, code patterns, test specs, and verification commands.
