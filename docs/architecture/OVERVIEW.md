@@ -204,20 +204,41 @@ Developer using Claude Code in frontend:
   Response returned to Claude Code session
 ```
 
-## Port Assignment
+## Transport
 
-Oracles auto-assign ports starting at 3100:
+**Default: Unix domain sockets** (not HTTP).
 
-- First oracle: 3100
-- Second oracle: 3101
-- etc.
+```
+~/.the-oracle/sockets/{oracle-name}.sock
+```
 
-Port conflicts are resolved by incrementing. The registry tracks which port each oracle uses.
+Unix domain sockets eliminate DNS rebinding, CORS attacks, and port scanning — the three most exploited attack vectors against localhost services (CVE-2025-49596, CVE-2025-52882, CVE-2025-66414).
+
+HTTP transport is available as opt-in for cross-machine scenarios, with mandatory mTLS and randomized ports (never predictable ranges).
 
 ## Security Model
 
-- **Localhost only** by default — oracles only listen on 127.0.0.1
-- **No authentication** in local mode (same machine = same trust boundary)
-- **Network mode** (Phase 6) adds API key authentication
-- **Adapter sandboxing** — adapters cannot access files outside their project directory
-- **Read-only by default** — oracles answer questions, they don't modify code (unless explicitly enabled)
+See [SECURITY_THREAT_MODEL.md](../internal/SECURITY_THREAT_MODEL.md) for the full 24-threat analysis.
+
+### Non-Negotiable Constraints
+
+1. **Authentication on every request** — Random bearer token generated at startup, stored with 0600 permissions. Required even on localhost. No "trust the local machine" — the machine runs npm scripts, browser extensions, and untrusted code.
+
+2. **Read-only cross-project queries** — Enforced at the protocol level. Adapters ONLY invoke read tools (Read, Glob, Grep). No Bash, Write, or Edit. This is a hard constraint, not configurable.
+
+3. **Secrets deny-list** — Hardcoded, non-overridable list of files NEVER read in cross-project queries: `.env*`, `*.pem`, `*.key`, SSH keys, cloud credentials. Users can ADD patterns via `.oracleignore` but cannot remove the hardcoded list.
+
+4. **No transitive routing** — Queries go to direct peers only (1 hop). Oracle never forwards to its own peers on behalf of a remote requester.
+
+5. **Context isolation** — Each peer query runs in an isolated adapter session. Results from one peer are never shared with queries to another peer.
+
+6. **Tool description sanitization** — All tool descriptions from peer oracles are stripped to a normalized schema. No free-text descriptions cross the trust boundary (prevents tool poisoning attacks).
+
+7. **No shell interpolation** — All CLI delegation uses `execFile`/`spawn` with argument arrays. Never `exec` with string concatenation.
+
+### Adapter Security
+
+- Claude adapter runs with `--allowedTools "Read,Glob,Grep"` and `--bare` mode for cross-project queries
+- Codex adapter uses most restrictive approval mode
+- Adapters spawn in isolated sessions per cross-project query (no state leakage)
+- Third-party adapters must pass a capability audit before being listed in the official registry
