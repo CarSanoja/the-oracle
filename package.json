@@ -1,0 +1,32 @@
+{
+  "name": "the-oracle",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Cross-project, cross-CLI AI communication layer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quanta-org/the-oracle"
+  },
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "dev": "turbo run dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "npm@10.0.0"
+}

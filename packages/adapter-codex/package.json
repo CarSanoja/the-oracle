@@ -1,0 +1,23 @@
+{
+  "name": "@the-oracle/adapter-codex",
+  "version": "0.0.1",
+  "description": "Codex CLI adapter for The Oracle",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "lint": "eslint src/",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@the-oracle/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  },
+  "license": "MIT"
+}
